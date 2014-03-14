@@ -5,5 +5,7 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="listTextSize">18dp</dimen>
     <dimen name="listpadding">5dp</dimen>
+    <dimen name="buttonPadding">5dp</dimen>
+    <dimen name="buttonMargin">10dp</dimen>
 
 </resources>

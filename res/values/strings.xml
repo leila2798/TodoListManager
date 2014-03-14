@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">TodoListManager</string>
+    <string name="app_name">Todo List</string>
     <string name="action_settings">Settings</string>
     <string name="menuItemAdd">Add item</string>
-   
     <string name="edtNewItem">Please enter a new todo item</string>
+    <string name="title_activity_add_new_todo_item">Add New Item</string>
+    <string name="btnOK">OK</string>
+    <string name="btnCancel">Cancel</string>
 
 </resources>
