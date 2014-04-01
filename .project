@@ -30,4 +30,11 @@
 		<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>libs/Parse-1.4.2.jar</name>
+			<type>1</type>
+			<location>/home/leah/workspace/TodoListManager/libs/Parse-1.4.2.jar</location>
+		</link>
+	</linkedResources>
 </projectDescription>

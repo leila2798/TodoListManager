@@ -8,6 +8,8 @@ public class ListItem {
 	public Date dueDate;
 	public String toDoText;
 	public boolean isCall;
+	//TODO: change to private and add getter and setter
+	public long id;
 		
 	public ListItem(Date date, String text){
 		dueDate = date;
