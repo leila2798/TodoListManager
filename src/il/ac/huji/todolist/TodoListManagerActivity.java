@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 
@@ -33,8 +35,19 @@ public class TodoListManagerActivity extends Activity {
 		Parse.initialize(this, "Y9TO7S3OQHrnbtvfo1wA1o24T9g22b1F9TOKXpIQ", "YcCpkMEc8A3WoXuI1N61k6YrF5bzYbJ2ERFn5qSC");
 
 		super.onCreate(savedInstanceState);
+
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
 		setContentView(R.layout.activity_todo_list_manager);
 
+		items=new ArrayList<ListItem>();
+
+		listAdapter = new TodoListManagerAdapter(getApplicationContext(), items);
+		ListView todoList = (ListView) findViewById(R.id.lstTodoItems);
+
+		todoList.setAdapter(listAdapter);
+
+		/*
 		try{
 			datasource = new TodoListDataSource(getApplicationContext());
 			datasource.open();
@@ -45,10 +58,11 @@ public class TodoListManagerActivity extends Activity {
 			//TODO: handle database-related exceptions if needed (currently ignoring)
 		}
 
-		listAdapter = new TodoListManagerAdapter(getApplicationContext(), items);
-		ListView todoList = (ListView) findViewById(R.id.lstTodoItems);
+		 */
 
-		todoList.setAdapter(listAdapter);
+		//HERE GOES THE ASYNCTASK
+		LoadTodoDBTask atask = new LoadTodoDBTask();
+		atask.execute();
 
 		registerForContextMenu(todoList);
 	}
@@ -66,7 +80,6 @@ public class TodoListManagerActivity extends Activity {
 		switch (item.getItemId()) {
 		case R.id.menuItemAdd:
 			Intent intent = new Intent(getApplicationContext(), AddNewTodoItemActivity.class); 
-			//TODO: check the request code
 			startActivityForResult(intent, 1); 
 
 			return true;
@@ -79,7 +92,7 @@ public class TodoListManagerActivity extends Activity {
 		if(resultCode==RESULT_OK && requestCode==1) {
 			// save the new item to the database
 			ListItem todo = datasource.addItem(data.getStringExtra("title"), data.getLongExtra("dueDate", -1));
-			
+
 			//save to parse
 			ParseObject todoItem = new ParseObject("todo");
 			todoItem.put("title", todo.toDoText);
@@ -87,7 +100,7 @@ public class TodoListManagerActivity extends Activity {
 			//UNIQUE!!! Used to delete an item
 			todoItem.put("sqLiteId", todo.id);
 			todoItem.saveInBackground();
-			
+
 			items.add(todo);
 			listAdapter.notifyDataSetChanged();
 		}       		 
@@ -122,11 +135,11 @@ public class TodoListManagerActivity extends Activity {
 			query.findInBackground(new FindCallback<ParseObject>() {
 				@Override
 				public void done(List<ParseObject> todoList, ParseException e) {
-			        if (e == null&&todoList.size()>0) {
-			        	todoList.get(0).deleteInBackground();
-			        } 
-			        //ignoring exception
-			    }
+					if (e == null&&todoList.size()>0) {
+						todoList.get(0).deleteInBackground();
+					} 
+					//ignoring exception
+				}
 			});
 			/*
 			try {
@@ -137,7 +150,7 @@ public class TodoListManagerActivity extends Activity {
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
 			}
-			*/
+			 */
 			listAdapter.notifyDataSetChanged();
 			return true;
 		case 2:
@@ -153,5 +166,47 @@ public class TodoListManagerActivity extends Activity {
 	protected void onDestroy() {
 		datasource.close();
 		super.onDestroy();
+	}
+
+	private class LoadTodoDBTask extends AsyncTask<Void, ArrayList<ListItem>, Void> {
+		private final int ITEMS_NUM = 10;
+		@SuppressWarnings("unchecked")
+		@Override
+		protected Void doInBackground(Void...voids) {
+			try{
+				datasource = new TodoListDataSource(getApplicationContext());
+				datasource.open();
+				int totItemsCnt = datasource.getAllItemsCount();
+				for (int i = 0; i < totItemsCnt; i+=ITEMS_NUM)
+				{
+					publishProgress(datasource.getItems(ITEMS_NUM, i));
+				}	
+			}
+			catch(Exception e){
+				//TODO: handle database-related exceptions if needed (currently ignoring)
+			}	
+			/*finally{
+				datasource.close();
+			}*/
+			return null;
+		}
+
+		protected void onProgressUpdate(ArrayList<ListItem>... progress) {
+			items.addAll(progress[0]);
+			listAdapter.notifyDataSetChanged();
+		}
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			setProgressBarIndeterminateVisibility(true);
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			super.onPostExecute(result);
+			setProgressBarIndeterminateVisibility(false);
+			
+		}
 	}
 }

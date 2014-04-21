@@ -70,4 +70,29 @@ public class TodoListDataSource {
 	    item.id=cursor.getLong(0);
 	    return item;
 	  }
+	  
+	  public int getAllItemsCount(){
+		  Cursor cursor = database.query(DAL.TABLE_TODO,
+			        allColumns, null, null, null, null, null);
+		  int cnt = cursor.getCount();
+		  cursor.close();
+		  return cnt;
+	  }
+	  
+	  public ArrayList<ListItem> getItems(int limit, int offset) {
+		    ArrayList<ListItem> items = new ArrayList<ListItem>();
+
+		    Cursor cursor = database.query(DAL.TABLE_TODO,
+		        allColumns, null, null, null, null, null, offset+","+limit);
+		    
+		    cursor.moveToFirst();
+		    while (!cursor.isAfterLast()) {
+		      ListItem item = cursorToListItem(cursor);
+		      items.add(item);
+		      cursor.moveToNext();
+		    }
+		    // make sure to close the cursor
+		    cursor.close();
+		    return items;
+		  }
 }
